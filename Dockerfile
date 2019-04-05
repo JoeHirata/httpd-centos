@@ -1,6 +1,13 @@
 FROM centos:7
 MAINTAINER xxjoexx
 
+ENV APACHE_RUN_USER www-data
+ENV APACHE_RUN_GROUP www-data
+ENV APACHE_PID_FILE /var/run/apache2.pid
+ENV APACHE_RUN_DIR /var/run/apache2
+ENV APACHE_LOG_DIR /var/log/apache2
+ENV APACHE_LOCK_DIR /var/lock/apache2
+
 # update yum
 RUN yum update -y && \
   yum clean all
@@ -16,10 +23,10 @@ RUN yum install -y epel-release && \
 RUN yum install -y httpd httpd-tools openssh-server openssh-clients openssl sudo which && \
   yum clean all
 
-# libmcrypt, supervisor
-RUN yum install --enablerepo=epel -y libmcrypt supervisor && \
-  yum clean all
+RUN cp -p /usr/share/zoneinfo/Japan /etc/localtime
 
-# gd-last (for php-gd)
-RUN yum install --enablerepo=remi -y gd-last && \
-  yum clean all
+ADD ./httpd.conf /etc/httpd/conf/httpd.conf
+
+EXPOSE 8080 80
+
+CMD ["/usr/sbin/httpd", "-D", "FOREGROUND"]
